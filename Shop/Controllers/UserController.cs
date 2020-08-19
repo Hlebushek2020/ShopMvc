@@ -79,8 +79,53 @@ namespace Shop.Controllers
         public ActionResult Edit(Guid id)
         {
             ApplicationUser applicationUser = dbContext.Users.Find(id.ToString());
-            ShopUserEdit userEdit = new ShopUserEdit(applicationUser);
-            return View(userEdit);
+            Customer customer = dbContext.Customers.Find(id);
+            UserEditViewModel userEditViewModel = new UserEditViewModel
+            {
+                Id = id,
+                Phone = applicationUser.PhoneNumber,
+                IsAdmin = false
+            };
+            if (customer != null)
+            {
+                userEditViewModel.Name = customer.Name;
+                userEditViewModel.Address = customer.Address;
+                userEditViewModel.Code = customer.Code;
+                userEditViewModel.Discount = customer.Discount;
+            }
+            var userManager = new ApplicationUserManager(new UserStore<ApplicationUser>(dbContext));
+            if (userManager.IsInRole(id.ToString(), "admin"))
+            {
+                userEditViewModel.IsAdmin = true;
+                userEditViewModel.Name = "NOUSE";
+                userEditViewModel.Code = "1212-2000";
+            }
+            return View(userEditViewModel);
+        }
+
+        [HttpPost]
+        public ActionResult Edit(UserEditViewModel userEditViewModel)
+        {
+            if (!ModelState.IsValid)
+                return View(userEditViewModel);
+
+            if (!string.IsNullOrEmpty(userEditViewModel.Password))
+            {
+                UserManager<ApplicationUser> userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(dbContext));
+                userManager.RemovePassword(userEditViewModel.Id.ToString());
+                userManager.AddPassword(userEditViewModel.Id.ToString(), userEditViewModel.Password);
+            }
+            if (userEditViewModel.IsAdmin == false)
+            {
+                Customer customer = dbContext.Customers.Find(userEditViewModel.Id);
+                customer.Name = userEditViewModel.Name;
+                customer.Address = userEditViewModel.Address;
+                customer.Code = userEditViewModel.Code;
+                customer.Discount = userEditViewModel.Discount;
+
+                dbContext.SaveChanges();
+            }
+            return RedirectToAction("Index");
         }
         #endregion
 
