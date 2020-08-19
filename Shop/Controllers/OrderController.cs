@@ -28,14 +28,43 @@ namespace Shop.Controllers
         public ActionResult Index(string statusFilter)
         {
             ViewBag.IsAdmin = IsAdmin;
-            return View();
+
+            IEnumerable<Order> orders = null;
+            if (IsAdmin)
+                orders = dbContext.Orders;
+            else
+            {
+                Guid userId = Guid.Parse(User.Identity.GetUserId());
+                Customer customer = dbContext.Customers.Find(userId);
+                if (string.IsNullOrEmpty(statusFilter))
+                    orders = customer.Orders;
+                else
+                    orders = customer.Orders.TakeWhile(order => order.Status == statusFilter);
+            }
+
+            return View(orders);
         }
         #endregion
 
         #region Confirm
         public ActionResult Confirm(Guid id)
         {
-            return View();
+            ConfirmViewModel confirmViewModel = new ConfirmViewModel { Id = id };
+            return View(confirmViewModel);
+        }
+
+        [HttpPost]
+        public ActionResult Confirm(ConfirmViewModel confirmViewModel)
+        {
+            if (!ModelState.IsValid)
+                return View(confirmViewModel);
+
+            Order order = dbContext.Orders.Find(confirmViewModel.Id);
+            order.ShipmentDate = confirmViewModel.ShipmentDate;
+            order.Status = "Выполняется";
+            dbContext.SaveChanges();
+
+            return RedirectToAction("Index");
         }
         #endregion
 
