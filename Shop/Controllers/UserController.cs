@@ -1,4 +1,6 @@
-﻿using Shop.Models;
+﻿using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
+using Shop.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -18,5 +20,89 @@ namespace Shop.Controllers
             return View(dbContext.Users);
         }
         #endregion
+
+        #region Create
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Create(UserCreateViewModel userCreateViewModel)
+        {
+            if (userCreateViewModel.IsAdmin)
+            {
+                userCreateViewModel.Name = "NOUSE";
+                userCreateViewModel.Code = "1212-2000";
+            }
+
+            if (!ModelState.IsValid)
+                return View(userCreateViewModel);
+
+            // User create
+            ApplicationUser applicationUser = new ApplicationUser
+            {
+                Email = userCreateViewModel.Email,
+                UserName = userCreateViewModel.Email,
+                PhoneNumber = userCreateViewModel.Phone
+            };
+            UserManager<ApplicationUser> userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(dbContext));
+            IdentityResult identityUser = userManager.Create(applicationUser, userCreateViewModel.Password);
+            // User add role 
+            if (identityUser.Succeeded)
+            {
+                string role = "user";
+                if (userCreateViewModel.IsAdmin)
+                    role = "admin";
+                userManager.AddToRole(applicationUser.Id.ToString(), role);
+            }
+            // Customer attached to user
+            if (userCreateViewModel.IsAdmin == false)
+            {
+                dbContext.Customers.Add(new Customer
+                {
+                    Id = Guid.Parse(applicationUser.Id),
+                    Name = userCreateViewModel.Name,
+                    Code = userCreateViewModel.Code,
+                    Address = userCreateViewModel.Address,
+                    Discount = userCreateViewModel.Discount
+                });
+            }
+
+            dbContext.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+        #endregion
+
+        #region Edit
+        public ActionResult Edit(Guid id)
+        {
+            ApplicationUser applicationUser = dbContext.Users.Find(id.ToString());
+            ShopUserEdit userEdit = new ShopUserEdit(applicationUser);
+            return View(userEdit);
+        }
+        #endregion
+
+        #region Delete
+        public JsonResult Delete(Guid id)
+        {
+            if (User.Identity.GetUserId() == id.ToString())
+                return Json("Невозможно удалить себя же");
+
+            // Delete user
+            ApplicationUser user = dbContext.Users.Find(id.ToString());
+            dbContext.Users.Remove(user);
+            // Delete customer attached to user
+            Customer customer = dbContext.Customers.Find(id);
+            if (customer != null)
+                dbContext.Customers.Remove(customer);
+
+            dbContext.SaveChanges();
+
+            return Json("ok");
+        }
+        #endregion
+
     }
 }

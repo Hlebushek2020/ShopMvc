@@ -104,6 +104,8 @@
                     "id": event.target.id
                 },
                 success: function (result) {
+                    if (result != "ok")
+                        alert(result);
                     window.location.reload();
                 },
                 error: function (result) {
