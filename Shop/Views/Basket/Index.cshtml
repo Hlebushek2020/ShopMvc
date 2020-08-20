@@ -1,0 +1,93 @@
+﻿@model IEnumerable<Shop.Models.OrderItem>
+
+@{
+    ViewBag.Title = "Basket";
+}
+
+<h2>Корзина</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Item.Code)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Item.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Item.Price)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ItemsCount)
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr id="@item.Item.Id-tr">
+            <td>
+                @Html.DisplayFor(modelItem => item.Item.Code)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Item.Price)
+            </td>
+            <td>
+                <input type="button" class="basket-item" value="+" id="@item.Item.Id" onclick="addCount(event)" />
+                @Html.EditorFor(modelItem => item.ItemsCount, new { htmlAttributes = new { @class = "form-control basket-item", @readonly = "readonly", id = $"{item.Item.Id}-count" } })
+                <input type="button" class="basket-item" value="-" id="@item.Item.Id" onclick="reduceCount(event)" />
+            </td>
+        </tr>
+    }
+
+</table>
+
+@Html.ActionLink("Оформить заказ", "Confirm");
+
+<script>
+    function addCount(event) {
+        event.preventDefault();
+        $.ajax({
+            method: 'POST',
+            url: '/Basket/Add',
+            data: {
+                "id": event.target.id
+            },
+            success: function (result) {
+                var countInput = document.getElementById(event.target.id + "-count");
+                countInput.setAttribute("value", result);
+            },
+            error: function (result) {
+                alert("Ошибка");
+                window.location.reload();
+            }
+        });
+    }
+
+    function reduceCount(event) {
+        event.preventDefault();
+        $.ajax({
+            method: 'POST',
+            url: '/Basket/Reduce',
+            data: {
+                "id": event.target.id
+            },
+            success: function (result) {
+                if (result > 0) {
+                    var countInput = document.getElementById(event.target.id + "-count");
+                    countInput.setAttribute("value", result);
+                }
+                else {
+                    var tr = document.getElementById(event.target.id + "-tr");
+                    tr.remove();
+                }
+            },
+            error: function (result) {
+                alert("Ошибка");
+                window.location.reload();
+            }
+        });
+    }
+</script>

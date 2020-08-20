@@ -1,0 +1,116 @@
+﻿@model IEnumerable<Shop.Models.Item>
+
+@{
+    ViewBag.Title = "Catalog";
+}
+
+<h2>Catalog</h2>
+
+@if (ViewBag.IsAdmin)
+{
+    <p>
+        @Html.ActionLink("Добавить новый товар", "Create")
+    </p>
+}
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Code)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Price)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Category)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Code)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Category)
+            </td>
+            @if (ViewBag.IsAdmin)
+            {
+                <td>
+
+                    @Html.ActionLink("Редактировать", "Edit", new { id = item.Id })|
+                    @Html.ActionLink("Удалить", null, null, new { id = item.Id, tag = item.Code, onClick = "deleteItem(event)" })
+
+                </td>
+            }
+            else
+            {
+                <td>
+                    @Html.ActionLink("Добавить", null, null, new { id = item.Id, tag = item.Code, onClick = "addToBacket(event)" })
+                </td>
+            }
+        </tr>
+    }
+
+</table>
+
+@if (ViewBag.IsAdmin)
+{
+    <script>
+        function deleteItem(event) {
+            event.preventDefault();
+            var result = confirm("Удалить товар " + event.target.getAttribute('tag') + "?");
+            if (result == true) {
+                $.ajax({
+                    method: 'POST',
+                    url: '/Catalog/Delete',
+                    data: {
+                        "id": event.target.id
+                    },
+                    success: function (result) {
+                        window.location.reload();
+                    },
+                    error: function (result) {
+                        alert("Ошибка");
+                        window.location.reload();
+                    }
+                });
+            }
+        }
+    </script>
+}
+else
+{
+    <script>
+        function addToBacket(event) {
+            event.preventDefault();
+            var result = confirm("Добавить товар в корзину " + event.target.getAttribute('tag') + "?");
+            if (result == true) {
+                $.ajax({
+                    method: 'POST',
+                    url: '/Basket/Add',
+                    data: {
+                        "id": event.target.id
+                    },
+                    success: function (result) {
+                        window.location.reload();
+                    },
+                    error: function (result) {
+                        alert("Ошибка");
+                        window.location.reload();
+                    }
+                });
+            }
+        }
+    </script>
+}

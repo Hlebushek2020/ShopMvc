@@ -155,6 +155,21 @@ namespace Shop.Controllers
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+
+
+                    await UserManager.AddToRoleAsync(user.Id, "user");
+                    ApplicationDbContext dbContext = new ApplicationDbContext();
+                    dbContext.Customers.Add(new Customer
+                    {
+                        Id = Guid.Parse(user.Id),
+                        Name = model.Name,
+                        Code = model.Code,
+                        Address = model.Address,
+                        Discount = 0
+                    });
+                    await dbContext.SaveChangesAsync();
+
+
                     await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
                     
                     // Дополнительные сведения о включении подтверждения учетной записи и сброса пароля см. на странице https://go.microsoft.com/fwlink/?LinkID=320771.

@@ -1,24 +1,68 @@
 ﻿body {
-    padding-top: 50px;
-    padding-bottom: 20px;
+    font-size: 12pt;
 }
 
-/* Set padding to keep content from hitting the edges */
-.body-content {
-    padding-left: 15px;
-    padding-right: 15px;
+header {
+    background-color: gainsboro;
 }
 
-/* Override the default bootstrap behavior where horizontal description lists 
-   will truncate terms that are too long to fit in the left column 
-*/
-.dl-horizontal dt {
-    white-space: normal;
+.container {
+    padding: 15px;
 }
 
-/* Set width on the form input elements since they're 100% wide by default */
-input,
-select,
+.user-container {
+    float: right;
+}
+
+    nav > a,
+    .user-container > a,
+    .user-container > form > a {
+        padding: 0 5px;
+        font-size: 12pt;
+        text-decoration: none;
+        color: darkgray;
+    }
+
+    nav > a:hover,
+    .user-container > a:hover,
+    .user-container > form > a:hover {
+        text-decoration: none;
+        color: black;
+        font-size: 14pt;
+    }
+
+.big-message {
+    text-align: center;
+    font-size: 20pt;
+}
+
+input[type=text],
+input[type=password],
+input[type=email],
+input[type=datetime],
+input[type=number],
 textarea {
-    max-width: 280px;
+    width: 300px !important;
+}
+
+input[type=checkbox] {
+    width: 15px;
+    height: 15px;
+}
+
+input[type=submit] {
+    width: 150px;
+}
+
+table {
+    display: flex;
+}
+
+.required-field {
+    border-color: yellow;
+}
+
+.basket-item {
+    width: 50px;
+    margin: 0 5px;
 }
