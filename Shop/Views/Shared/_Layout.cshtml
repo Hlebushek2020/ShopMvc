@@ -12,18 +12,18 @@
 <body>
     <header>
         <nav class="container">
+            @Html.ActionLink("Каталог", "Index", "Catalog")
+            @Html.ActionLink("Заказы", "Index", "Order")
+
             @if (User.IsInRole("admin"))
             {
-                @Html.ActionLink("Каталог", "Catalog", "Admin")
                 @Html.ActionLink("Пользователи", "Index", "User")
-                @Html.ActionLink("Заказы", "Orders", "Admin")
             }
             else
             {
-                @Html.ActionLink("Каталог", "Catalog", "Home")
-                @Html.ActionLink("Заказы", "Orders", "Home")
-                @Html.ActionLink("Корзина", "Basket", "Home")
+                @Html.ActionLink("Корзина", "Index", "Basket")
             }
+
             <div class="user-container">
                 @Html.Partial("_LoginPartial")
             </div>

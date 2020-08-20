@@ -51,7 +51,33 @@ namespace Shop.Controllers
         #region Confirm
         public ActionResult Confirm()
         {
-            return View();
+            if (Request.Cookies[CookieName] == null)
+                return RedirectToAction("Index");
+
+            HttpCookie basketCookie = Request.Cookies[CookieName];
+            string[] keys = basketCookie.Values.AllKeys;
+            Order order = new Order
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = Guid.Parse(User.Identity.GetUserId()),
+                OrderDate = DateTime.Now,
+                Status = "Новый",
+                OrderItems = new List<OrderItem>()
+            };
+            for (int i = 0; i < keys.Length; i++)
+                order.OrderItems.Add(new OrderItem
+                {
+                    Order = order,
+                    ItemsCount = Convert.ToInt32(basketCookie.Values[keys[i]]),
+                    Item = dbContext.Items.Find(Guid.Parse(keys[i]))
+                });
+
+            dbContext.Orders.Add(order);
+            dbContext.SaveChanges();
+
+            Request.Cookies.Remove(CookieName);
+
+            return View(order.OrderNumber);
         }
         #endregion
 

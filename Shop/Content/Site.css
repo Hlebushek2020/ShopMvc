@@ -31,8 +31,9 @@ header {
         font-size: 14pt;
     }
 
-.message {
+.big-message {
     text-align: center;
+    font-size: 20pt;
 }
 
 input[type=text],
