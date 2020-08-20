@@ -13,6 +13,22 @@ namespace Shop.Controllers
     public class UserController : Controller
     {
         private readonly ApplicationDbContext dbContext = new ApplicationDbContext();
+        private readonly ApplicationUserManager userManager;
+
+        public UserController()
+        {
+            userManager = new ApplicationUserManager(new UserStore<ApplicationUser>(dbContext));
+        }
+
+        private bool IsAdmin
+        {
+            get
+            {
+                if (User.Identity.IsAuthenticated)
+                    return userManager.IsInRole(User.Identity.GetUserId(), "admin");
+                return false;
+            }
+        }
 
         #region Index
         public ActionResult Index()
@@ -117,6 +133,8 @@ namespace Shop.Controllers
             }
             if (userEditViewModel.IsAdmin == false)
             {
+                ApplicationUser user = dbContext.Users.Find(userEditViewModel.Id.ToString());
+                user.PhoneNumber = userEditViewModel.Phone;
                 Customer customer = dbContext.Customers.Find(userEditViewModel.Id);
                 customer.Name = userEditViewModel.Name;
                 customer.Address = userEditViewModel.Address;

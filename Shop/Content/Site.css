@@ -17,32 +17,27 @@ header {
     nav > a,
     .user-container > a,
     .user-container > form > a {
-        padding: 0 5px;
+        margin: 0 5px;
         font-size: 12pt;
         text-decoration: none;
-        color: darkgray;
+        color: dimgrey;
     }
 
-    nav > a:hover,
-    .user-container > a:hover,
-    .user-container > form > a:hover {
-        text-decoration: none;
-        color: black;
-        font-size: 14pt;
-    }
+        nav > a:hover,
+        nav > a:active,
+        .user-container > a:hover,
+        .user-container > a:active,
+        .user-container > form > a:hover,
+        .user-container > form > a:active {
+            text-decoration: none;
+            color: black;
+            font-size: 14pt;
+        }
 
 .big-message {
+    display: block;
     text-align: center;
     font-size: 20pt;
-}
-
-input[type=text],
-input[type=password],
-input[type=email],
-input[type=datetime],
-input[type=number],
-textarea {
-    width: 300px !important;
 }
 
 input[type=checkbox] {
@@ -54,15 +49,39 @@ input[type=submit] {
     width: 150px;
 }
 
-table {
+table,
+.display-flex {
     display: flex;
 }
 
 .required-field {
-    border-color: yellow;
+    border-color: darkred;
 }
 
-.basket-item {
+.search-form {
+    margin: 4px 0 8px 0;
+}
+
+
+.basket-button-input {
     width: 50px;
     margin: 0 5px;
+}
+
+.basket-count-input {
+    width: 100px !important;
+    text-align: center;
+}
+
+input[type=text],
+input[type=password],
+input[type=email],
+input[type=datetime],
+input[type=number],
+input[type=tel] {
+    width: 300px;
+}
+
+textarea {
+    width: 300px !important;
 }

@@ -22,7 +22,12 @@ namespace Shop.Controllers
 
         private bool IsAdmin
         {
-            get => userManager.IsInRole(User.Identity.GetUserId(), "admin");
+            get
+            {
+                if (User.Identity.IsAuthenticated)
+                    return userManager.IsInRole(User.Identity.GetUserId(), "admin");
+                return false;
+            }
         }
 
         private const string CookieName = "Basket";
@@ -65,17 +70,23 @@ namespace Shop.Controllers
                 OrderItems = new List<OrderItem>()
             };
             for (int i = 0; i < keys.Length; i++)
-                order.OrderItems.Add(new OrderItem
+            {
+                OrderItem orderItem = new OrderItem
                 {
+                    Id = Guid.NewGuid(),
                     Order = order,
                     ItemsCount = Convert.ToInt32(basketCookie.Values[keys[i]]),
                     Item = dbContext.Items.Find(Guid.Parse(keys[i]))
-                });
+                };
+                if (orderItem.Item.Price != null)
+                    orderItem.ItemPrice = orderItem.Item.Price.Value;
+                order.OrderItems.Add(orderItem);
+            }
 
             dbContext.Orders.Add(order);
             dbContext.SaveChanges();
 
-            Request.Cookies.Remove(CookieName);
+            Response.Cookies.Remove(CookieName);
 
             return View(order.OrderNumber);
         }
@@ -90,7 +101,7 @@ namespace Shop.Controllers
             if (Request.Cookies[CookieName] != null)
             {
                 basketCookie = Request.Cookies[CookieName];
-                Request.Cookies.Remove(CookieName);
+                Response.Cookies.Remove(CookieName);
             }
             else
                 basketCookie = new HttpCookie(CookieName) { Expires = DateTime.Now.AddDays(7) };
@@ -102,7 +113,7 @@ namespace Shop.Controllers
             else
                 basketCookie.Values.Add(stringId, count.ToString());
 
-            Request.Cookies.Add(basketCookie);
+            Response.Cookies.Add(basketCookie);
 
             return Json(count);
         }
@@ -117,20 +128,20 @@ namespace Shop.Controllers
             if (Request.Cookies[CookieName] != null)
             {
                 basketCookie = Request.Cookies[CookieName];
-                Request.Cookies.Remove(CookieName);
+                Response.Cookies.Remove(CookieName);
             }
             else
                 basketCookie = new HttpCookie(CookieName) { Expires = DateTime.Now.AddDays(7) };
             if (basketCookie.Values[stringId] != null)
             {
-                count -= Convert.ToInt32(basketCookie.Values[stringId]);
+                count = Convert.ToInt32(basketCookie.Values[stringId]) - count;
                 if (count <= 0)
                     basketCookie.Values.Remove(stringId);
                 else
                     basketCookie.Values[stringId] = count.ToString();
             }
 
-            Request.Cookies.Add(basketCookie);
+            Response.Cookies.Add(basketCookie);
 
             return Json(count);
 
