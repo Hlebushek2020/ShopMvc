@@ -92,7 +92,7 @@
 else
 {
     <script>
-        function deleteItem(event) {
+        function addToBacket(event) {
             event.preventDefault();
             var result = confirm("Добавить товар в корзину " + event.target.getAttribute('tag') + "?");
             if (result == true) {
@@ -100,8 +100,7 @@ else
                     method: 'POST',
                     url: '/Basket/Add',
                     data: {
-                        "id": event.target.id,
-                        "count": 1
+                        "id": event.target.id
                     },
                     success: function (result) {
                         window.location.reload();

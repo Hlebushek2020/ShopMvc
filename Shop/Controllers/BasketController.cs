@@ -30,16 +30,37 @@ namespace Shop.Controllers
         #region Index
         public ActionResult Index()
         {
-            // create list orderItems
+            List<OrderItem> orderItems = new List<OrderItem>();
+            if (Request.Cookies[CookieName] != null)
+            {
+                HttpCookie basketCookie = Request.Cookies[CookieName];
+                string[] keys = basketCookie.Values.AllKeys;
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.ItemsCount = Convert.ToInt32(basketCookie.Values[keys[i]]);
+                    orderItem.Item = dbContext.Items.Find(Guid.Parse(keys[i]));
+                    if (orderItem.Item != null)
+                        orderItems.Add(orderItem);
+                }
+            }
+            return View(orderItems);
+        }
+        #endregion
+
+        #region Confirm
+        public ActionResult Confirm()
+        {
             return View();
         }
         #endregion
 
         #region Add
-        public JsonResult Add(Guid id, int count)
+        public JsonResult Add(Guid id)
         {
             string stringId = id.ToString();
-            HttpCookie basketCookie = null;
+            int count = 1;
+            HttpCookie basketCookie;
             if (Request.Cookies[CookieName] != null)
             {
                 basketCookie = Request.Cookies[CookieName];
@@ -49,7 +70,7 @@ namespace Shop.Controllers
                 basketCookie = new HttpCookie(CookieName) { Expires = DateTime.Now.AddDays(7) };
             if (basketCookie.Values[stringId] != null)
             {
-                count = Convert.ToInt32(basketCookie.Values[stringId]) + count;
+                count += Convert.ToInt32(basketCookie.Values[stringId]);
                 basketCookie.Values[stringId] = count.ToString();
             }
             else
@@ -60,5 +81,35 @@ namespace Shop.Controllers
             return Json(count);
         }
         #endregion
+
+        #region Reduce
+        public JsonResult Reduce(Guid id)
+        {
+            string stringId = id.ToString();
+            int count = 1;
+            HttpCookie basketCookie;
+            if (Request.Cookies[CookieName] != null)
+            {
+                basketCookie = Request.Cookies[CookieName];
+                Request.Cookies.Remove(CookieName);
+            }
+            else
+                basketCookie = new HttpCookie(CookieName) { Expires = DateTime.Now.AddDays(7) };
+            if (basketCookie.Values[stringId] != null)
+            {
+                count -= Convert.ToInt32(basketCookie.Values[stringId]);
+                if (count <= 0)
+                    basketCookie.Values.Remove(stringId);
+                else
+                    basketCookie.Values[stringId] = count.ToString();
+            }
+
+            Request.Cookies.Add(basketCookie);
+
+            return Json(count);
+
+        }
+        #endregion
+
     }
 }
