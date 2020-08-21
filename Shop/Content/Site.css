@@ -78,7 +78,8 @@ input[type=password],
 input[type=email],
 input[type=datetime],
 input[type=number],
-input[type=tel] {
+input[type=tel],
+input[type=date] {
     width: 300px;
 }
 

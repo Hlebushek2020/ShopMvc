@@ -44,7 +44,14 @@
 
 </table>
 
-@Html.ActionLink("Оформить заказ", "Confirm")
+@if (User.Identity.IsAuthenticated)
+{
+    @Html.ActionLink("Оформить заказ", "Confirm")
+}
+else
+{
+    <span>Для подтверждения заказа выполните вход!</span>
+}
 
 <script>
     function addCount(event) {
