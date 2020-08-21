@@ -3,6 +3,7 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using Shop.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -21,7 +22,12 @@ namespace Shop.Controllers
 
         private bool IsAdmin
         {
-            get => userManager.IsInRole(User.Identity.GetUserId(), "admin");
+            get
+            {
+                if (User.Identity.IsAuthenticated)
+                    return userManager.IsInRoleAsync(User.Identity.GetUserId(), "admin").Result;
+                return false;
+            }
         }
 
         #region Index
@@ -35,12 +41,13 @@ namespace Shop.Controllers
             else
             {
                 Guid userId = Guid.Parse(User.Identity.GetUserId());
-                Customer customer = dbContext.Customers.Find(userId);
                 if (string.IsNullOrEmpty(statusFilter))
-                    orders = customer.Orders;
+                    orders = dbContext.Orders.Where(x => x.Customer.Id == userId);
                 else
-                    orders = customer.Orders.TakeWhile(order => order.Status == statusFilter);
+                    orders = dbContext.Orders.Where(x => x.Customer.Id == userId && x.Status == statusFilter);
             }
+            if (orders == null)
+                orders = new List<Order>();
 
             return View(orders);
         }

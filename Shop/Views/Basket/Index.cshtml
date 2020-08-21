@@ -34,17 +34,24 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Item.Price)
             </td>
-            <td>
-                <input type="button" class="basket-item" value="+" id="@item.Item.Id" onclick="addCount(event)" />
-                @Html.EditorFor(modelItem => item.ItemsCount, new { htmlAttributes = new { @class = "form-control basket-item", @readonly = "readonly", id = $"{item.Item.Id}-count" } })
-                <input type="button" class="basket-item" value="-" id="@item.Item.Id" onclick="reduceCount(event)" />
+            <td class="display-flex">
+                <input type="button" class="btn btn-default basket-button-input" value="+" id="@item.Item.Id" onclick="addCount(event)" />
+                @Html.EditorFor(modelItem => item.ItemsCount, new { htmlAttributes = new { @class = "form-control basket-count-input", @readonly = "readonly", id = $"{item.Item.Id}-count" } })
+                <input type="button" class="btn btn-default basket-button-input" value="-" id="@item.Item.Id" onclick="reduceCount(event)" />
             </td>
         </tr>
     }
 
 </table>
 
-@Html.ActionLink("Оформить заказ", "Confirm");
+@if (User.Identity.IsAuthenticated)
+{
+    @Html.ActionLink("Оформить заказ", "Confirm")
+}
+else
+{
+    <span>Для подтверждения заказа выполните вход!</span>
+}
 
 <script>
     function addCount(event) {

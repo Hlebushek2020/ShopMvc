@@ -21,7 +21,12 @@ namespace Shop.Controllers
 
         private bool IsAdmin
         {
-            get => userManager.IsInRole(User.Identity.GetUserId(), "admin");     
+            get
+            {
+                if (User.Identity.IsAuthenticated)
+                    return userManager.IsInRole(User.Identity.GetUserId(), "admin");
+                return false;
+            }
         }
 
         #region Index
@@ -59,6 +64,7 @@ namespace Shop.Controllers
             return View(item);
         }
 
+        [HttpPost]
         public ActionResult Edit(Item item)
         {
             if (!ModelState.IsValid)
