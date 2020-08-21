@@ -42,9 +42,9 @@ namespace Shop.Controllers
             {
                 Guid userId = Guid.Parse(User.Identity.GetUserId());
                 if (string.IsNullOrEmpty(statusFilter))
-                    orders = dbContext.Orders.TakeWhile(x => x.CustomerId == userId);
+                    orders = dbContext.Orders.Where(x => x.Customer.Id == userId);
                 else
-                    orders = dbContext.Orders.TakeWhile(x => x.CustomerId == userId && x.Status == statusFilter);
+                    orders = dbContext.Orders.Where(x => x.Customer.Id == userId && x.Status == statusFilter);
             }
             if (orders == null)
                 orders = new List<Order>();

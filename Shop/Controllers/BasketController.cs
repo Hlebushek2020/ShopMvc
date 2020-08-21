@@ -86,7 +86,8 @@ namespace Shop.Controllers
             dbContext.Orders.Add(order);
             dbContext.SaveChanges();
 
-            Response.Cookies.Remove(CookieName);
+            basketCookie.Expires = DateTime.Now.AddDays(-1);
+            Response.Cookies.Add(basketCookie);
 
             return View(order.OrderNumber);
         }
@@ -99,10 +100,7 @@ namespace Shop.Controllers
             int count = 1;
             HttpCookie basketCookie;
             if (Request.Cookies[CookieName] != null)
-            {
                 basketCookie = Request.Cookies[CookieName];
-                Response.Cookies.Remove(CookieName);
-            }
             else
                 basketCookie = new HttpCookie(CookieName) { Expires = DateTime.Now.AddDays(7) };
             if (basketCookie.Values[stringId] != null)
@@ -126,10 +124,7 @@ namespace Shop.Controllers
             int count = 1;
             HttpCookie basketCookie;
             if (Request.Cookies[CookieName] != null)
-            {
                 basketCookie = Request.Cookies[CookieName];
-                Response.Cookies.Remove(CookieName);
-            }
             else
                 basketCookie = new HttpCookie(CookieName) { Expires = DateTime.Now.AddDays(7) };
             if (basketCookie.Values[stringId] != null)
@@ -141,6 +136,8 @@ namespace Shop.Controllers
                     basketCookie.Values[stringId] = count.ToString();
             }
 
+            if (basketCookie.Values.Count == 0)
+                basketCookie.Expires = DateTime.Now.AddDays(-1);
             Response.Cookies.Add(basketCookie);
 
             return Json(count);
