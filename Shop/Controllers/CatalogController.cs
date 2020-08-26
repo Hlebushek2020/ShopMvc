@@ -11,20 +11,14 @@ namespace Shop.Controllers
 {
     public class CatalogController : Controller
     {
-        private readonly ApplicationDbContext dbContext = new ApplicationDbContext();
-        private readonly ApplicationUserManager userManager;
-
-        public CatalogController()
-        {
-            userManager = new ApplicationUserManager(new UserStore<ApplicationUser>(dbContext));
-        }
+        private readonly DataBaseManager dbManager = new DataBaseManager();
 
         private bool IsAdmin
         {
             get
             {
                 if (User.Identity.IsAuthenticated)
-                    return userManager.IsInRole(User.Identity.GetUserId(), "admin");
+                    return dbManager.Users.Manager.IsInRole(User.Identity.GetUserId(), "admin");
                 return false;
             }
         }
@@ -33,7 +27,7 @@ namespace Shop.Controllers
         public ActionResult Index()
         {
             ViewBag.IsAdmin = IsAdmin;
-            return View(dbContext.Items);
+            return View(dbManager.Items.GetAll());
         }
         #endregion
 
@@ -50,8 +44,8 @@ namespace Shop.Controllers
                 return View(item);
 
             item.Id = Guid.NewGuid();
-            dbContext.Items.Add(item);
-            dbContext.SaveChanges();
+            dbManager.Items.Add(item);
+            dbManager.SaveChanges();
 
             return RedirectToAction("Index");
         }
@@ -60,7 +54,7 @@ namespace Shop.Controllers
         #region Edit
         public ActionResult Edit(Guid id)
         {
-            Item item = dbContext.Items.Find(id);
+            Item item = dbManager.Items.Get(id);
             return View(item);
         }
 
@@ -70,12 +64,8 @@ namespace Shop.Controllers
             if (!ModelState.IsValid)
                 return View(item);
 
-            Item dbItem = dbContext.Items.Find(item.Id);
-            dbItem.Code = item.Code;
-            dbItem.Name = item.Name;
-            dbItem.Category = item.Category;
-            dbItem.Price = item.Price;
-            dbContext.SaveChanges();
+            dbManager.Items.Update(item);
+            dbManager.SaveChanges();
 
             return RedirectToAction("Index");
         }
@@ -84,9 +74,9 @@ namespace Shop.Controllers
         #region Delete
         public JsonResult Delete(Guid id)
         {
-            Item item = dbContext.Items.Find(id);
-            dbContext.Items.Remove(item);
-            dbContext.SaveChanges();
+            dbManager.Items.Remove(id);
+            dbManager.SaveChanges();
+
             return Json("ok");
         }
         #endregion

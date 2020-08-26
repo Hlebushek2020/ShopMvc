@@ -67,7 +67,7 @@ namespace Shop.Models
             }
         }
 
-        public void Save() =>
+        public void SaveChanges() =>
             dbContext.SaveChanges();
 
 

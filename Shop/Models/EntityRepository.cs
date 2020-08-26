@@ -11,7 +11,9 @@ namespace Shop.Models
     interface IRepository<T> where T : class
     {
         IEnumerable<T> GetAll();
+        IEnumerable<T> GetWhere(Func<T, bool> predicate);
         T Get(Guid id);
+        T Get(string id);
         void Add(T item);
         void Update(T item);
         void Remove(Guid id);
@@ -20,44 +22,44 @@ namespace Shop.Models
     interface IUser
     {
         bool Add(ApplicationUser user, string password, string role);
-        void ChangePassword(string userId, string newPassword);
     }
 
     public class UserRepository : IRepository<ApplicationUser>, IUser
     {
         private ApplicationDbContext dbContext;
+        public ApplicationUserManager Manager { get; private set; }
 
-        public UserRepository(ApplicationDbContext dbContext) =>
+        public UserRepository(ApplicationDbContext dbContext)
+        {
             this.dbContext = dbContext;
+            Manager = new ApplicationUserManager(new UserStore<ApplicationUser>(dbContext));
+        }
 
         public void Add(ApplicationUser item) =>
             dbContext.Users.Add(item);
 
         public bool Add(ApplicationUser user, string password, string role)
         {
-            UserManager<ApplicationUser> userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(dbContext));
-            IdentityResult identityUser = userManager.Create(user, password);
+            IdentityResult identityUser = Manager.Create(user, password);
             // User add role 
             if (identityUser.Succeeded)
             {
-                userManager.AddToRole(user.Id, role);
+                Manager.AddToRole(user.Id, role);
                 return true;
             }
             return false;
         }
 
-        public void ChangePassword(string userId, string newPassword)
-        {
-            UserManager<ApplicationUser> userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(dbContext));
-            userManager.RemovePassword(userId);
-            userManager.AddPassword(userId, newPassword);
-        }
+        public ApplicationUser Get(Guid id) => Get(id.ToString());
 
-        public ApplicationUser Get(Guid id) =>
-            dbContext.Users.Find(id.ToString());
+        public ApplicationUser Get(string id) =>
+            dbContext.Users.Find(id);
 
         public IEnumerable<ApplicationUser> GetAll() =>
             dbContext.Users;
+
+        public IEnumerable<ApplicationUser> GetWhere(Func<ApplicationUser, bool> predicate) =>
+            dbContext.Users.Where(predicate);
 
         public void Remove(Guid id)
         {
@@ -83,8 +85,13 @@ namespace Shop.Models
         public Customer Get(Guid id) =>
             dbContext.Customers.Find(id);
 
+        public Customer Get(string id) => Get(Guid.Parse(id));
+
         public IEnumerable<Customer> GetAll() =>
             dbContext.Customers;
+
+        public IEnumerable<Customer> GetWhere(Func<Customer, bool> predicate) =>
+            dbContext.Customers.Where(predicate);
 
         public void Remove(Guid id)
         {
@@ -110,8 +117,13 @@ namespace Shop.Models
         public Order Get(Guid id) =>
             dbContext.Orders.Find(id);
 
+        public Order Get(string id) => Get(Guid.Parse(id));
+
         public IEnumerable<Order> GetAll() =>
             dbContext.Orders;
+
+        public IEnumerable<Order> GetWhere(Func<Order, bool> predicate) =>
+            dbContext.Orders.Where(predicate);
 
         public void Remove(Guid id)
         {
@@ -137,8 +149,13 @@ namespace Shop.Models
         public OrderItem Get(Guid id) =>
             dbContext.OrderItems.Find(id);
 
+        public OrderItem Get(string id) => Get(Guid.Parse(id));
+
         public IEnumerable<OrderItem> GetAll() =>
             dbContext.OrderItems;
+
+        public IEnumerable<OrderItem> GetWhere(Func<OrderItem, bool> predicate) =>
+            dbContext.OrderItems.Where(predicate);
 
         public void Remove(Guid id)
         {
@@ -164,8 +181,13 @@ namespace Shop.Models
         public Item Get(Guid id) =>
             dbContext.Items.Find(id);
 
+        public Item Get(string id) => Get(Guid.Parse(id));
+
         public IEnumerable<Item> GetAll() =>
             dbContext.Items;
+
+        public IEnumerable<Item> GetWhere(Func<Item, bool> predicate) =>
+            dbContext.Items.Where(predicate);
 
         public void Remove(Guid id)
         {

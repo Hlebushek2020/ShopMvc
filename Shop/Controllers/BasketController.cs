@@ -12,23 +12,7 @@ namespace Shop.Controllers
 {
     public class BasketController : Controller
     {
-        private readonly ApplicationDbContext dbContext = new ApplicationDbContext();
-        private readonly ApplicationUserManager userManager;
-
-        public BasketController()
-        {
-            userManager = new ApplicationUserManager(new UserStore<ApplicationUser>(dbContext));
-        }
-
-        private bool IsAdmin
-        {
-            get
-            {
-                if (User.Identity.IsAuthenticated)
-                    return userManager.IsInRole(User.Identity.GetUserId(), "admin");
-                return false;
-            }
-        }
+        private readonly DataBaseManager dbManager = new DataBaseManager();
 
         private const string CookieName = "Basket";
 
@@ -44,7 +28,7 @@ namespace Shop.Controllers
                 {
                     OrderItem orderItem = new OrderItem();
                     orderItem.ItemsCount = Convert.ToInt32(basketCookie.Values[keys[i]]);
-                    orderItem.Item = dbContext.Items.Find(Guid.Parse(keys[i]));
+                    orderItem.Item = dbManager.Items.Get(keys[i]); 
                     if (orderItem.Item != null)
                         orderItems.Add(orderItem);
                 }
@@ -76,15 +60,15 @@ namespace Shop.Controllers
                     Id = Guid.NewGuid(),
                     Order = order,
                     ItemsCount = Convert.ToInt32(basketCookie.Values[keys[i]]),
-                    Item = dbContext.Items.Find(Guid.Parse(keys[i]))
+                    Item = dbManager.Items.Get(keys[i])
                 };
                 if (orderItem.Item.Price != null)
                     orderItem.ItemPrice = orderItem.Item.Price.Value;
                 order.OrderItems.Add(orderItem);
             }
 
-            dbContext.Orders.Add(order);
-            dbContext.SaveChanges();
+            dbManager.Orders.Add(order);
+            dbManager.SaveChanges();
 
             basketCookie.Expires = DateTime.Now.AddDays(-1);
             Response.Cookies.Add(basketCookie);
