@@ -85,6 +85,11 @@
     </div>
 }
 
+
+<div>
+    @Html.ActionLink("Назад к списку", "Index")
+</div>
+
 @if (Model.IsAdmin)
 {
     <script>
@@ -92,11 +97,7 @@
 
         function setHidden() {
             var customer = Ext.get("customer");
-            customer.setAttribute("hidden", "hidden");
+            customer.set({ hidden: true });
         }
     </script>
 }
-
-<div>
-    @Html.ActionLink("Назад к списку", "Index")
-</div>
