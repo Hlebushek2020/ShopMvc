@@ -83,16 +83,16 @@
             event.preventDefault();
             var result = confirm("Закрыть заказ №" + event.target.getAttribute('tag') + "?");
             if (result == true) {
-                $.ajax({
+                Ext.Ajax.request({
                     method: 'POST',
                     url: '/Order/Close',
-                    data: {
+                    params: {
                         "id": event.target.id
                     },
-                    success: function (result) {
+                    success: function (response, options) {
                         window.location.reload();
                     },
-                    error: function (result) {
+                    failure: function (response, options) {
                         alert("Ошибка");
                         window.location.reload();
                     }
@@ -108,18 +108,19 @@ else
             event.preventDefault();
             var result = confirm("Удалить заказ №" + event.target.getAttribute('tag') + "?");
             if (result == true) {
-                $.ajax({
+                Ext.Ajax.request({
                     method: 'POST',
                     url: '/Order/Delete',
-                    data: {
+                    params: {
                         "id": event.target.id
                     },
-                    success: function (result) {
-                        if (result != "ok")
-                            alert(result);
+                    success: function (response, options) {
+                        var rText = response.responseText;
+                        if (rText != "ok")
+                            alert(rText);
                         window.location.reload();
                     },
-                    error: function (result) {
+                    failure: function (response, options) {
                         alert("Ошибка");
                         window.location.reload();
                     }

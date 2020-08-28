@@ -71,16 +71,16 @@
             event.preventDefault();
             var result = confirm("Удалить товар " + event.target.getAttribute('tag') + "?");
             if (result == true) {
-                $.ajax({
+                Ext.Ajax.request({
                     method: 'POST',
                     url: '/Catalog/Delete',
-                    data: {
+                    params: {
                         "id": event.target.id
                     },
-                    success: function (result) {
+                    success: function (response, options) {
                         window.location.reload();
                     },
-                    error: function (result) {
+                    failure: function (response, options) {
                         alert("Ошибка");
                         window.location.reload();
                     }
@@ -96,16 +96,16 @@ else
             event.preventDefault();
             var result = confirm("Добавить товар в корзину " + event.target.getAttribute('tag') + "?");
             if (result == true) {
-                $.ajax({
+                Ext.Ajax.request({
                     method: 'POST',
                     url: '/Basket/Add',
-                    data: {
+                    params: {
                         "id": event.target.id
                     },
-                    success: function (result) {
+                    success: function (response, options) {
                         window.location.reload();
                     },
-                    error: function (result) {
+                    failure: function (response, options) {
                         alert("Ошибка");
                         window.location.reload();
                     }

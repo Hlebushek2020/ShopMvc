@@ -56,17 +56,18 @@ else
 <script>
     function addCount(event) {
         event.preventDefault();
-        $.ajax({
+        Ext.Ajax.request({
             method: 'POST',
             url: '/Basket/Add',
-            data: {
+            params: {
                 "id": event.target.id
             },
-            success: function (result) {
-                var countInput = document.getElementById(event.target.id + "-count");
-                countInput.setAttribute("value", result);
+            success: function (response, options) {
+                var rText = response.responseText;
+                var countInput = Ext.get(event.target.id + "-count");
+                countInput.set({ value: rText });
             },
-            error: function (result) {
+            failure: function (response, options) {
                 alert("Ошибка");
                 window.location.reload();
             }
@@ -75,23 +76,24 @@ else
 
     function reduceCount(event) {
         event.preventDefault();
-        $.ajax({
+        Ext.Ajax.request({
             method: 'POST',
             url: '/Basket/Reduce',
-            data: {
+            params: {
                 "id": event.target.id
             },
-            success: function (result) {
-                if (result > 0) {
-                    var countInput = document.getElementById(event.target.id + "-count");
-                    countInput.setAttribute("value", result);
+            success: function (response, options) {
+                var rText = response.responseText;
+                if (rText > 0) {
+                    var countInput = Ext.get(event.target.id + "-count");
+                    countInput.set({ value: rText });
                 }
                 else {
-                    var tr = document.getElementById(event.target.id + "-tr");
+                    var tr = Ext.get(event.target.id + "-tr");
                     tr.remove();
                 }
             },
-            error: function (result) {
+            failure: function (response, options) {
                 alert("Ошибка");
                 window.location.reload();
             }

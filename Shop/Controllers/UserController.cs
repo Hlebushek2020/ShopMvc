@@ -12,28 +12,12 @@ namespace Shop.Controllers
 {
     public class UserController : Controller
     {
-        private readonly ApplicationDbContext dbContext = new ApplicationDbContext();
-        private readonly ApplicationUserManager userManager;
-
-        public UserController()
-        {
-            userManager = new ApplicationUserManager(new UserStore<ApplicationUser>(dbContext));
-        }
-
-        private bool IsAdmin
-        {
-            get
-            {
-                if (User.Identity.IsAuthenticated)
-                    return userManager.IsInRole(User.Identity.GetUserId(), "admin");
-                return false;
-            }
-        }
+        private readonly DataBaseManager dbManager = new DataBaseManager();
 
         #region Index
         public ActionResult Index()
         {
-            return View(dbContext.Users);
+            return View(dbManager.Users.GetAll());
         }
         #endregion
 
@@ -62,20 +46,16 @@ namespace Shop.Controllers
                 UserName = userCreateViewModel.Email,
                 PhoneNumber = userCreateViewModel.Phone
             };
-            UserManager<ApplicationUser> userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(dbContext));
-            IdentityResult identityUser = userManager.Create(applicationUser, userCreateViewModel.Password);
-            // User add role 
-            if (identityUser.Succeeded)
-            {
-                string role = "user";
-                if (userCreateViewModel.IsAdmin)
-                    role = "admin";
-                userManager.AddToRole(applicationUser.Id.ToString(), role);
-            }
+            // User role
+            string role = "user";
+            if (userCreateViewModel.IsAdmin)
+                role = "admin";
+            // Add user
+            dbManager.Users.Add(applicationUser, userCreateViewModel.Password, role);
             // Customer attached to user
             if (userCreateViewModel.IsAdmin == false)
             {
-                dbContext.Customers.Add(new Customer
+                dbManager.Customers.Add(new Customer
                 {
                     Id = Guid.Parse(applicationUser.Id),
                     Name = userCreateViewModel.Name,
@@ -85,7 +65,7 @@ namespace Shop.Controllers
                 });
             }
 
-            dbContext.SaveChanges();
+            dbManager.SaveChanges();
 
             return RedirectToAction("Index");
         }
@@ -94,8 +74,8 @@ namespace Shop.Controllers
         #region Edit
         public ActionResult Edit(Guid id)
         {
-            ApplicationUser applicationUser = dbContext.Users.Find(id.ToString());
-            Customer customer = dbContext.Customers.Find(id);
+            ApplicationUser applicationUser = dbManager.Users.Get(id);
+            Customer customer = dbManager.Customers.Get(id);
             UserEditViewModel userEditViewModel = new UserEditViewModel
             {
                 Id = id,
@@ -109,8 +89,7 @@ namespace Shop.Controllers
                 userEditViewModel.Code = customer.Code;
                 userEditViewModel.Discount = customer.Discount;
             }
-            var userManager = new ApplicationUserManager(new UserStore<ApplicationUser>(dbContext));
-            if (userManager.IsInRole(id.ToString(), "admin"))
+            if (dbManager.Users.Manager.IsInRole(id.ToString(), "admin"))
             {
                 userEditViewModel.IsAdmin = true;
                 userEditViewModel.Name = "NOUSE";
@@ -127,21 +106,20 @@ namespace Shop.Controllers
 
             if (!string.IsNullOrEmpty(userEditViewModel.Password))
             {
-                UserManager<ApplicationUser> userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(dbContext));
-                userManager.RemovePassword(userEditViewModel.Id.ToString());
-                userManager.AddPassword(userEditViewModel.Id.ToString(), userEditViewModel.Password);
+                dbManager.Users.Manager.RemovePassword(userEditViewModel.Id.ToString());
+                dbManager.Users.Manager.AddPassword(userEditViewModel.Id.ToString(), userEditViewModel.Password);
             }
             if (userEditViewModel.IsAdmin == false)
             {
-                ApplicationUser user = dbContext.Users.Find(userEditViewModel.Id.ToString());
+                ApplicationUser user = dbManager.Users.Get(userEditViewModel.Id);
                 user.PhoneNumber = userEditViewModel.Phone;
-                Customer customer = dbContext.Customers.Find(userEditViewModel.Id);
+                Customer customer = dbManager.Customers.Get(userEditViewModel.Id);
                 customer.Name = userEditViewModel.Name;
                 customer.Address = userEditViewModel.Address;
                 customer.Code = userEditViewModel.Code;
                 customer.Discount = userEditViewModel.Discount;
 
-                dbContext.SaveChanges();
+                dbManager.SaveChanges();
             }
             return RedirectToAction("Index");
         }
@@ -154,14 +132,11 @@ namespace Shop.Controllers
                 return Json("Невозможно удалить себя же");
 
             // Delete user
-            ApplicationUser user = dbContext.Users.Find(id.ToString());
-            dbContext.Users.Remove(user);
+            dbManager.Users.Remove(id);
             // Delete customer attached to user
-            Customer customer = dbContext.Customers.Find(id);
-            if (customer != null)
-                dbContext.Customers.Remove(customer);
+            dbManager.Customers.Remove(id);
 
-            dbContext.SaveChanges();
+            dbManager.SaveChanges();
 
             return Json("ok");
         }

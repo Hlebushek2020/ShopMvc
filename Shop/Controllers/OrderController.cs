@@ -12,20 +12,14 @@ namespace Shop.Controllers
 {
     public class OrderController : Controller
     {
-        private readonly ApplicationDbContext dbContext = new ApplicationDbContext();
-        private readonly ApplicationUserManager userManager;
-
-        public OrderController()
-        {
-            userManager = new ApplicationUserManager(new UserStore<ApplicationUser>(dbContext));
-        }
+        private readonly DataBaseManager dbManager = new DataBaseManager();
 
         private bool IsAdmin
         {
             get
             {
                 if (User.Identity.IsAuthenticated)
-                    return userManager.IsInRoleAsync(User.Identity.GetUserId(), "admin").Result;
+                    return dbManager.Users.Manager.IsInRoleAsync(User.Identity.GetUserId(), "admin").Result;
                 return false;
             }
         }
@@ -37,14 +31,14 @@ namespace Shop.Controllers
 
             IEnumerable<Order> orders = null;
             if (IsAdmin)
-                orders = dbContext.Orders;
+                orders = dbManager.Orders.GetAll();
             else
             {
                 Guid userId = Guid.Parse(User.Identity.GetUserId());
                 if (string.IsNullOrEmpty(statusFilter))
-                    orders = dbContext.Orders.Where(x => x.Customer.Id == userId);
+                    orders = dbManager.Orders.GetWhere(x => x.CustomerId == userId);
                 else
-                    orders = dbContext.Orders.Where(x => x.Customer.Id == userId && x.Status == statusFilter);
+                    orders = dbManager.Orders.GetWhere(x => x.CustomerId == userId && x.Status == statusFilter);
             }
             if (orders == null)
                 orders = new List<Order>();
@@ -66,10 +60,10 @@ namespace Shop.Controllers
             if (!ModelState.IsValid)
                 return View(confirmViewModel);
 
-            Order order = dbContext.Orders.Find(confirmViewModel.Id);
+            Order order = dbManager.Orders.Get(confirmViewModel.Id);
             order.ShipmentDate = confirmViewModel.ShipmentDate;
             order.Status = "Выполняется";
-            dbContext.SaveChanges();
+            dbManager.SaveChanges();
 
             return RedirectToAction("Index");
         }
@@ -79,9 +73,9 @@ namespace Shop.Controllers
         [HttpPost]
         public JsonResult Close(Guid id)
         {
-            Order order = dbContext.Orders.Find(id);
+            Order order = dbManager.Orders.Get(id);
             order.Status = "Выполнен";
-            dbContext.SaveChanges();
+            dbManager.SaveChanges();
 
             return Json("ok");
         }
@@ -91,11 +85,11 @@ namespace Shop.Controllers
         [HttpPost]
         public JsonResult Delete(Guid id)
         {
-            Order order = dbContext.Orders.Find(id);
+            Order order = dbManager.Orders.Get(id);
             if (order.Status == "Новый")
             {
-                dbContext.Orders.Remove(order);
-                dbContext.SaveChanges();
+                dbManager.Orders.Remove(id);
+                dbManager.SaveChanges();
             }
             else
                 return Json("Невозможно удалить заказ с текущим статусом");
