@@ -36,9 +36,9 @@ namespace Shop.Controllers
             {
                 Guid userId = Guid.Parse(User.Identity.GetUserId());
                 if (string.IsNullOrEmpty(statusFilter))
-                    orders = dbManager.Orders.GetWhere(x => x.Customer.Id == userId);
+                    orders = dbManager.Orders.GetWhere(x => x.CustomerId == userId);
                 else
-                    orders = dbManager.Orders.GetWhere(x => x.Customer.Id == userId && x.Status == statusFilter);
+                    orders = dbManager.Orders.GetWhere(x => x.CustomerId == userId && x.Status == statusFilter);
             }
             if (orders == null)
                 orders = new List<Order>();
